@@ -16,9 +16,6 @@ fi
 echo "==> Updating repositories into ${BASE_DIR}"
 "${UPDATE_SCRIPT}" "${BASE_DIR}"
 
-cp "${DEPLOY_DIR}/docker-compose.yml" "${BASE_DIR}/docker-compose.yml"
-echo "==> Synced docker-compose.yml to ${BASE_DIR}"
-
 if [[ ! -f "${BASE_DIR}/.env" ]]; then
   cp "${DEPLOY_DIR}/.env.example" "${BASE_DIR}/.env"
   echo "==> Created ${BASE_DIR}/.env from deploy/.env.example"
@@ -28,13 +25,20 @@ fi
 cp "${DEPLOY_DIR}/.env.example" "${BASE_DIR}/.env.example"
 echo "==> Synced .env.example to ${BASE_DIR}"
 
-cd "${BASE_DIR}"
+COMPOSE_FILE="${BASE_DIR}/global-stock-webapi/deploy/docker-compose.yml"
+
+if [[ ! -f "${COMPOSE_FILE}" ]]; then
+  echo "ERROR: compose file not found: ${COMPOSE_FILE}" >&2
+  exit 1
+fi
+
+cd "${BASE_DIR}/global-stock-webapi/deploy"
 
 echo "==> Pulling latest base images"
-docker compose pull || true
+docker compose --env-file "${BASE_DIR}/.env" -f "${COMPOSE_FILE}" pull || true
 
 echo "==> Building and starting services"
-docker compose up -d --build
+docker compose --env-file "${BASE_DIR}/.env" -f "${COMPOSE_FILE}" up -d --build
 
 echo "==> Deployment status"
-docker compose ps
+docker compose --env-file "${BASE_DIR}/.env" -f "${COMPOSE_FILE}" ps
