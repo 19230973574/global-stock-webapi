@@ -16,16 +16,17 @@ fi
 echo "==> Updating repositories into ${BASE_DIR}"
 "${UPDATE_SCRIPT}" "${BASE_DIR}"
 
-if [[ ! -f "${BASE_DIR}/docker-compose.yml" ]]; then
-  cp "${DEPLOY_DIR}/docker-compose.yml" "${BASE_DIR}/docker-compose.yml"
-  echo "==> Copied docker-compose.yml to ${BASE_DIR}"
-fi
+cp "${DEPLOY_DIR}/docker-compose.yml" "${BASE_DIR}/docker-compose.yml"
+echo "==> Synced docker-compose.yml to ${BASE_DIR}"
 
 if [[ ! -f "${BASE_DIR}/.env" ]]; then
   cp "${DEPLOY_DIR}/.env.example" "${BASE_DIR}/.env"
   echo "==> Created ${BASE_DIR}/.env from deploy/.env.example"
   echo "==> Please edit ${BASE_DIR}/.env and rerun deploy if secrets are still empty"
 fi
+
+cp "${DEPLOY_DIR}/.env.example" "${BASE_DIR}/.env.example"
+echo "==> Synced .env.example to ${BASE_DIR}"
 
 cd "${BASE_DIR}"
 
