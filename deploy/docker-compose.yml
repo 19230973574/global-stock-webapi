@@ -1,0 +1,113 @@
+services:
+  mongo:
+    image: mongo:8.0
+    container_name: global-stock-mongo
+    hostname: global-stock-mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-glb12345876}
+    ports:
+      - "${API_PORT_MONGO:-27017}:27017"
+    volumes:
+      - global_stock_mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 20s
+
+  redis:
+    image: redis:7
+    container_name: global-stock-redis
+    hostname: global-stock-redis
+    restart: always
+    command: redis-server --appendonly yes
+    ports:
+      - "${API_PORT_REDIS:-6379}:6379"
+    volumes:
+      - global_stock_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  global-stock-webapi:
+    build:
+      context: /app/global-stock-webapi
+      dockerfile: Dockerfile
+    container_name: global-stock-webapi
+    restart: always
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      MONGO_URI: mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-glb12345876}@global-stock-mongo:27017/${MONGO_DB_NAME:-db_global_stock}?authSource=admin
+      MONGO_DB_NAME: ${MONGO_DB_NAME:-db_global_stock}
+      APP_BASE_URL: http://localhost:${ADMIN_UI_PORT:-3001}
+      MAIL_HOST: ${MAIL_HOST:-smtp.qq.com}
+      MAIL_PORT: ${MAIL_PORT:-465}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      MAIL_SSL_ENABLE: ${MAIL_SSL_ENABLE:-true}
+      MAIL_STARTTLS_ENABLE: ${MAIL_STARTTLS_ENABLE:-false}
+      MAIL_STARTTLS_REQUIRED: ${MAIL_STARTTLS_REQUIRED:-false}
+      MAIL_SSL_PROTOCOLS: ${MAIL_SSL_PROTOCOLS:-TLSv1.2}
+      MAIL_SSL_TRUST: ${MAIL_SSL_TRUST:-smtp.qq.com}
+      EMAIL_DEBUG: ${EMAIL_DEBUG:-false}
+      MAIL_DEBUG: ${MAIL_DEBUG:-false}
+      SESSION_TTL_HOURS: ${SESSION_TTL_HOURS:-72}
+      BOOTSTRAP_SUPER_ADMIN_EMAILS: ${BOOTSTRAP_SUPER_ADMIN_EMAILS:-}
+    ports:
+      - "${API_PORT:-8080}:8080"
+
+  global-stock-webui:
+    build:
+      context: /app/global-stock-webui
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: http://localhost:${API_PORT:-8080}
+    container_name: global-stock-webui
+    restart: always
+    depends_on:
+      global-stock-webapi:
+        condition: service_started
+    ports:
+      - "${ADMIN_UI_PORT:-3001}:80"
+
+  global-stock-ui:
+    build:
+      context: /app/global-stock-ui
+      dockerfile: Dockerfile
+    container_name: global-stock-ui
+    restart: always
+    ports:
+      - "${OFFICIAL_UI_PORT:-3000}:80"
+
+  global-stock-sprider:
+    build:
+      context: /app/global-stock-sprider
+      dockerfile: Dockerfile
+    container_name: global-stock-sprider
+    restart: always
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      LONGPORT_APP_KEY: ${LONGPORT_APP_KEY:-}
+      LONGPORT_APP_SECRET: ${LONGPORT_APP_SECRET:-}
+      LONGPORT_ACCESS_TOKEN: ${LONGPORT_ACCESS_TOKEN:-}
+      MONGO_URI: mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-glb12345876}@global-stock-mongo:27017/${MONGO_DB_NAME:-db_global_stock}?authSource=admin
+      MONGO_DB_NAME: ${MONGO_DB_NAME:-db_global_stock}
+    command: ["python", "main.py"]
+
+volumes:
+  global_stock_mongo_data:
+  global_stock_redis_data:
