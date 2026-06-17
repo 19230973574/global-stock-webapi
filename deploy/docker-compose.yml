@@ -49,7 +49,7 @@ services:
     environment:
       MONGO_URI: mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-glb12345876}@global-stock-mongo:27017/${MONGO_DB_NAME:-db_global_stock}?authSource=admin
       MONGO_DB_NAME: ${MONGO_DB_NAME:-db_global_stock}
-      APP_BASE_URL: http://localhost:${ADMIN_UI_PORT:-3001}
+      APP_BASE_URL: ${APP_BASE_URL:-http://203.91.72.69}
       MAIL_HOST: ${MAIL_HOST:-smtp.qq.com}
       MAIL_PORT: ${MAIL_PORT:-465}
       MAIL_USERNAME: ${MAIL_USERNAME:-}
@@ -71,7 +71,7 @@ services:
       context: /app/global-stock-webui
       dockerfile: Dockerfile
       args:
-        VITE_API_BASE_URL: http://localhost:${API_PORT:-8080}
+        VITE_API_BASE_URL: /api
     container_name: global-stock-webui
     restart: always
     depends_on:
