@@ -1,0 +1,43 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: global-stock-webapi
+  data:
+    mongodb:
+      uri: ${MONGO_URI:mongodb://admin:password@localhost:27017/db_global_stock?authSource=admin&directConnection=true}
+      database: ${MONGO_DB_NAME:db_global_stock}
+  mail:
+    host: ${MAIL_HOST:smtp.qq.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:jqqnotice@foxmail.com}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          connectiontimeout: ${MAIL_CONNECTION_TIMEOUT:10000}
+          timeout: ${MAIL_READ_TIMEOUT:10000}
+          writetimeout: ${MAIL_WRITE_TIMEOUT:10000}
+          auth: true
+          debug: ${MAIL_DEBUG:false}
+          starttls:
+            enable: ${MAIL_STARTTLS_ENABLE:true}
+            required: ${MAIL_STARTTLS_REQUIRED:true}
+          ssl:
+            enable: ${MAIL_SSL_ENABLE:false}
+            trust: ${MAIL_SSL_TRUST:smtp.qq.com}
+            protocols: ${MAIL_SSL_PROTOCOLS:TLSv1.2}
+
+market:
+  app:
+    base-url: ${APP_BASE_URL:http://localhost:3001}
+  email:
+    debug: ${EMAIL_DEBUG:false}
+  auth:
+    session-ttl-hours: ${SESSION_TTL_HOURS:72}
+    bootstrap-super-admin-emails: ${BOOTSTRAP_SUPER_ADMIN_EMAILS:19230973574@163.com}
+  cors:
+    allowed-origins:
+      - http://localhost:3001
+      - http://127.0.0.1:3001
