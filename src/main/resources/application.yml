@@ -39,5 +39,6 @@ market:
     bootstrap-super-admin-emails: ${BOOTSTRAP_SUPER_ADMIN_EMAILS:19230973574@163.com}
   cors:
     allowed-origins:
-      - http://localhost:3001
-      - http://127.0.0.1:3001
+      - ${CORS_ALLOWED_ORIGIN_1:http://localhost:3001}
+      - ${CORS_ALLOWED_ORIGIN_2:http://127.0.0.1:3001}
+      - ${CORS_ALLOWED_ORIGIN_3:http://203.91.72.69:3001}
